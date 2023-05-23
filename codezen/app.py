@@ -2,6 +2,7 @@ import argparse
 import logging
 from langchain import LLMChain, PromptTemplate
 from langchain.chat_models import ChatOpenAI
+from langchain.callbacks import get_openai_callback
 
 import os
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -124,8 +125,15 @@ def main():
         f"Loaded {len(docs)} documents, total of {sum([len(doc.page_content) for doc in docs])} characters"
     )
 
-    result = llm.run(
-        file_context=context_string, issue_description=args.issue_description
-    )
+    with get_openai_callback() as cb:
+        result = llm.run(
+            file_context=context_string, issue_description=args.issue_description
+        )
 
+    print()
+    print("Answer:")
     print(result)
+
+    print()
+    print("OpenAI stats:")
+    print(cb)
