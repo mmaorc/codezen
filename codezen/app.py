@@ -113,7 +113,7 @@ def main():
     # Set logging level
     logging.basicConfig(level=logging.WARNING)
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.INFO)
 
     model = ChatOpenAI(model_name=args.model_name)
     llm = LLMChain(llm=model, prompt=prompt_template)
