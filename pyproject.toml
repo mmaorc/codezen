@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "codezen"
-version = "0.1.0"
+version = "0.1.1"
 description = "Your indispensable partner in programming"
 authors = ["Maor Cohen <me@maorcohen.net>"]
 homepage = "https://github.com/mmaorc/codezen"
