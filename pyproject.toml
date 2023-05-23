@@ -3,6 +3,7 @@ name = "codezen"
 version = "0.1.0"
 description = "Your indispensable partner in programming"
 authors = ["Maor Cohen <me@maorcohen.net>"]
+homepage = "https://github.com/mmaorc/codezen"
 readme = "README.md"
 
 [tool.poetry.dependencies]
