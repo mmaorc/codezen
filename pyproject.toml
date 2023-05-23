@@ -10,6 +10,7 @@ readme = "README.md"
 python = "^3.11"
 langchain = "^0.0.177"
 openai = "^0.27.7"
+binaryornot = "^0.4.4"
 
 
 [tool.poetry.group.dev.dependencies]

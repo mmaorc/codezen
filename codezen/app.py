@@ -1,27 +1,14 @@
 import argparse
 import logging
+import subprocess
+from pathlib import Path
+
+from binaryornot.check import is_binary
 from langchain import LLMChain, PromptTemplate
-from langchain.chat_models import ChatOpenAI
 from langchain.callbacks import get_openai_callback
-
-import os
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chat_models import ChatOpenAI
 from langchain.docstore.document import Document
-
-# I should try to use .gitignore file here
-ignored_directories = [
-    ".git",
-    "node_modules",
-    "public",
-    ".mypy_cache",
-    "venv",
-    ".venv",
-    "__pycache__",
-    "dist",
-    "docs",
-    ".mypy_cache",
-]
-ignored_filenames = ["package-lock.json", ".DS_Store", "poetry.lock"]
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 prompt = """You are an AI debugger who is trying to debug a program for a user based on their file system. The user has provided you with the following files and their contents, finally folllowed by the error message or issue they are facing.
 
@@ -42,32 +29,35 @@ prompt_template = PromptTemplate(
 )
 
 
-def load_files(root_dir):
+def get_project_files_paths(root_dir: str) -> list[Path]:
+    result = subprocess.run(
+        ["git", "ls-files"], cwd=root_dir, capture_output=True, text=True
+    ).stdout
+    file_paths_strings = result.splitlines()
+    file_paths = [Path(root_dir) / Path(fp) for fp in file_paths_strings]
+    return file_paths
+
+
+def load_files_to_langchain_documents(root_dir: Path, project_files_paths: list[Path]):
     text_splitter = RecursiveCharacterTextSplitter()
 
     docs = []
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        relpath = os.path.relpath(dirpath, root_dir)
-        if not any(d in relpath for d in ignored_directories):
-            for file in filenames:
-                if file not in ignored_filenames:
-                    abs_file_path = os.path.join(dirpath, file)
-                    try:
-                        with open(abs_file_path, encoding="utf-8") as f:
-                            text = f.read()
-                        natural_document = Document(
-                            page_content=text,
-                            metadata={"source": os.path.join(relpath, file)},
-                        )
-                        split_document = text_splitter.split_documents(
-                            [natural_document]
-                        )
-                        docs.extend(split_document)
-                    except Exception as e:
-                        print(
-                            f"Exception loading the document {abs_file_path}:\n"
-                            + str(e)
-                        )
+    for file_path in project_files_paths:
+        try:
+            if is_binary(str(file_path)):
+                logging.info(f"Skipping binary file {file_path}")
+                continue
+            with open(file_path, encoding="utf-8") as f:
+                text = f.read()
+            relative_path = file_path.relative_to(root_dir)  # Maybe we don't need this?
+            natural_document = Document(
+                page_content=text,
+                metadata={"source": relative_path},
+            )
+            split_document = text_splitter.split_documents([natural_document])
+            docs.extend(split_document)
+        except Exception as e:
+            raise Exception(f"Exception loading the document {file_path}:\n") from e
 
     return docs
 
@@ -118,7 +108,8 @@ def main():
     model = ChatOpenAI(model_name=args.model_name)
     llm = LLMChain(llm=model, prompt=prompt_template)
 
-    docs = load_files(args.root_dir)
+    project_files_paths = get_project_files_paths(args.root_dir)
+    docs = load_files_to_langchain_documents(args.root_dir, project_files_paths)
     context_string = build_context_string(docs)
 
     logging.info(
