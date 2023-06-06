@@ -13,6 +13,12 @@ Current limitations:
 * It can't change files autonomously, it only offers a solution.
 * It uses hard coded direcory names to know which files to ignore. Currently it only contains Python and Node.js common ignorable directories.
 
+Usage examples:
+```bash
+codezen "Why am I getting <some exception message>?"
+codezen "Write a README.md file for this project"
+```
+
 
 ## Installation
 ### Using PyPi
