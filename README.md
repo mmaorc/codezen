@@ -63,12 +63,6 @@ codezen <issue_description>
 
 `<issue_description>`: Describe the issue you are facing with your code
 
-Example:
-
-```bash
-codezen "Im getting the following error: ValueError: invalid literal for int() with base 10: a"
-codezen "Write a readme.md file for this project"
-```
 
 ## Contributing
 
