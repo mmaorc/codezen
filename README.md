@@ -17,7 +17,7 @@ The differences from Github Copilot:
 Current limitations:
 * Only Work for small codebases- currently we send the entire codebase in each request. 😆
 * It can't change files autonomously, it only offers a solution.
-* It uses hard coded direcory names to know which files to ignore. Currently it only contains Python and Node.js common ignorable directories.
+* It uses gitignore file to know which files to ignore, so you must run this in a git repo and you can't currently ignore files that don't appear there.
 
 
 ## Installation
