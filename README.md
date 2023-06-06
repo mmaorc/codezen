@@ -2,7 +2,7 @@
 
 ## Description
 
-CodeZen is your indispensable partner in programming. It is a CLI utility that uses LLMs to help you debug and evolve your codebase based on your requests.
+CodeZen is a CLI utility that uses LLMs to help you debug and evolve your codebase based on your requests.
 
 The differences from Github Copilot:
 * This is a CLI tool, meaning it can be used regardless of your chosen IDE.
