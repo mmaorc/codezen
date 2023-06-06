@@ -4,6 +4,12 @@
 
 CodeZen is a CLI utility that uses LLMs to help you debug and evolve your codebase based on your requests.
 
+Usage examples:
+```bash
+codezen "Why am I getting <some exception message>?"
+codezen "Write a README.md file for this project"
+```
+
 The differences from Github Copilot:
 * This is a CLI tool, meaning it can be used regardless of your chosen IDE.
 * This provides the LLM with the entire codebase, so it can do things that require a more wholistic view of your project.
@@ -12,12 +18,6 @@ Current limitations:
 * Only Work for small codebases- currently we send the entire codebase in each request. 😆
 * It can't change files autonomously, it only offers a solution.
 * It uses hard coded direcory names to know which files to ignore. Currently it only contains Python and Node.js common ignorable directories.
-
-Usage examples:
-```bash
-codezen "Why am I getting <some exception message>?"
-codezen "Write a README.md file for this project"
-```
 
 
 ## Installation
