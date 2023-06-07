@@ -10,6 +10,9 @@ from langchain.chat_models import ChatOpenAI
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
+from codezen.ignore_files import filter_files, load_ignore_file
+
+
 prompt = """You are an AI coder who is trying to help the user develop and debug an application based on their file system. The user has provided you with the following files and their contents, finally folllowed by the error message or issue they are facing.
 
 The file list is given between the triple backticks (```), Each file is separated by three dashes (---). There are no files in the project besides the ones listed here.
@@ -95,6 +98,13 @@ def main():
         help="The root directory of the project",
     )
     parser.add_argument(
+        "-i",
+        "--ignore-file",
+        dest="ignore_file",
+        default="./.czignore",
+        help="The path to the .czignore file",
+    )
+    parser.add_argument(
         "issue_description",
         help="The issue description",
     )
@@ -109,6 +119,13 @@ def main():
     llm = LLMChain(llm=model, prompt=prompt_template)
 
     project_files_paths = get_project_files_paths(args.root_dir)
+    czignore_patterns = load_ignore_file(args.ignore_file)
+    project_files_paths = (
+        filter_files(project_files_paths, czignore_patterns)
+        if czignore_patterns
+        else project_files_paths
+    )
+
     docs = load_files_to_langchain_documents(args.root_dir, project_files_paths)
     context_string = build_context_string(docs)
 

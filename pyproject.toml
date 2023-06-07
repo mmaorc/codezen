@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "codezen"
-version = "0.1.1"
+version = "0.2.0"
 description = "Your indispensable partner in programming"
 authors = ["Maor Cohen <me@maorcohen.net>"]
 homepage = "https://github.com/mmaorc/codezen"
@@ -11,6 +11,7 @@ python = "^3.11"
 langchain = "^0.0.177"
 openai = "^0.27.7"
 binaryornot = "^0.4.4"
+pathspec = "^0.11.1"
 
 
 [tool.poetry.group.dev.dependencies]
