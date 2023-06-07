@@ -12,10 +12,10 @@ codezen "Write a README.md file for this project"
 
 The differences from Github Copilot:
 * This is a CLI tool, meaning it can be used regardless of your chosen IDE.
-* This provides the LLM with the entire codebase, so it can do things that require a more wholistic view of your project.
+* This provides the LLM with the entire codebase, so it can do things that require a more holistic view of your project.
 
 Current limitations:
-* Only Work for small codebases- currently we send the entire codebase in each request. 😆
+* Only works for small codebases- currently it sends the entire codebase on each request. 😆
 * It can't change files autonomously, it only offers a solution.
 * It uses gitignore file to know which files to ignore, so you must run this in a git repo and you can't currently ignore files that don't appear there.
 
@@ -42,7 +42,7 @@ poetry build
 
 
 ### Development
-For development purposes, clone the repository, navigate to the project directory, and install in a virtual environment:
+For development purposes, clone the repository, navigate to the project directory, and install it in a virtual environment:
 
 ```bash
 git clone https://github.com/mmaorc/codezen
@@ -53,7 +53,7 @@ poetry shell
 
 ## Usage
 
-Prior to running the script, ensure that the `OPENAI_API_KEY` environment variable is set up correctly.
+Before running the script, ensure that the `OPENAI_API_KEY` environment variable is set up correctly.
 
 Run CodeZen with the following command:
 
