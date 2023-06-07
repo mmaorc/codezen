@@ -15,7 +15,7 @@ The differences from Github Copilot:
 * This provides the LLM with the entire codebase, so it can do things that require a more holistic view of your project.
 
 Current limitations:
-* Only works for small codebases- currently it sends the entire codebase on each request. 😆
+* Only works for small codebases- currently it sends the entire codebase on each request (except the ignored files). 😆
 * It can't change files autonomously, it only offers a solution.
 * It uses gitignore file to know which files to ignore, so you must run this in a git repo and you can't currently ignore files that don't appear there.
 
@@ -62,6 +62,8 @@ codezen <issue_description>
 ```
 
 `<issue_description>`: Describe the issue you are facing with your code
+
+If you want to ignore additional files without adding them to your `.gitignore`, You can create a `.czignore` file at the project's root and add them there.
 
 
 ## Contributing
