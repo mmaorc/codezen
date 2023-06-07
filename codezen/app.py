@@ -10,7 +10,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-prompt = """You are an AI debugger who is trying to debug a program for a user based on their file system. The user has provided you with the following files and their contents, finally folllowed by the error message or issue they are facing.
+prompt = """You are an AI coder who is trying to help the user develop and debug an application based on their file system. The user has provided you with the following files and their contents, finally folllowed by the error message or issue they are facing.
 
 The file list is given between the triple backticks (```), Each file is separated by three dashes (---). There are no files in the project besides the ones listed here.
 ```
@@ -22,7 +22,7 @@ The issue is given between the triple hashes (###):
 {issue_description}
 ###
 
-If you need further information please ask. If you don't know the answer, say that you don't know.
+If you are not sure what the answer is, say that explicitly.
 """
 prompt_template = PromptTemplate(
     input_variables=["file_context", "issue_description"], template=prompt
