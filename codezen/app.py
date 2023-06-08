@@ -98,43 +98,17 @@ def build_context_string(root_dirpath: Path, relevant_filepaths: List[Path]) -> 
 app = typer.Typer(add_completion=False)
 
 
-@app.command(
-    name="list-files", help="Show the files that will be included in the prompt context"
-)
-def list_files(
-    model_name: Annotated[
-        str,
-        typer.Option("-m", "--model", help="The model name to use for the LLMChain"),
-    ] = "gpt-4",
-    root_dir: Annotated[
-        str, typer.Option("-d", "--root-dir", help="The root directory of the project")
-    ] = "./",
-    czignore_file: Annotated[
-        str, typer.Option("--czignore-file", help="The path to the .czignore file")
-    ] = "./.czignore",
-):
-    relevant_filepaths = get_relevant_filepaths(
-        root_dirpath=Path(root_dir), czignore_filepath=Path(czignore_file)
-    )
-
-    # Calculate total number of tokens
-    model = create_model(model_name=model_name)
-    context_string = build_context_string(Path(root_dir), relevant_filepaths)
-    token_count = model.get_num_tokens(context_string)
-
-    print("Total number of request tokens:")
-    print(token_count)
-    print()
-
-    print("Included files:")
-    print("\n".join([str(p) for p in relevant_filepaths]))
-
-
 @app.command(help="Ask the LLM a question or make a request")
-def ask(
+def main(
     issue_description: Annotated[str, typer.Argument(help="The issue description")],
     verbose: Annotated[
         bool, typer.Option("-v", "--verbose", help="Enable verbose logging")
+    ] = False,
+    estimate: Annotated[
+        bool,
+        typer.Option(
+            "--estimate", help="Estimate request token count and show included files"
+        ),
     ] = False,
     model_name: Annotated[
         str,
@@ -153,7 +127,6 @@ def ask(
         logging.basicConfig(level=logging.INFO)
 
     model = create_model(model_name=model_name)
-    llm = LLMChain(llm=model, prompt=prompt_template)
 
     relevant_filepaths = get_relevant_filepaths(
         root_dirpath=Path(root_dir), czignore_filepath=Path(czignore_file)
@@ -161,15 +134,27 @@ def ask(
 
     context_string = build_context_string(Path(root_dir), relevant_filepaths)
 
-    with get_openai_callback() as cb:
-        result = llm.run(
-            file_context=context_string, issue_description=issue_description
-        )
+    if estimate:
+        token_count = model.get_num_tokens(context_string)
 
-    print()
-    print("Answer:")
-    print(result)
+        print("Total number of request tokens:")
+        print(token_count)
+        print()
 
-    print()
-    print("OpenAI stats:")
-    print(cb)
+        print("Included files:")
+        print("\n".join([str(p) for p in relevant_filepaths]))
+    else:
+        llm = LLMChain(llm=model, prompt=prompt_template)
+
+        with get_openai_callback() as cb:
+            result = llm.run(
+                file_context=context_string, issue_description=issue_description
+            )
+
+        print()
+        print("Answer:")
+        print(result)
+
+        print()
+        print("OpenAI stats:")
+        print(cb)
