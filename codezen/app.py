@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from pathlib import Path
 from typing import Annotated
 
@@ -11,7 +10,11 @@ from langchain.chat_models import ChatOpenAI
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from codezen.ignore_files import filter_files, load_ignore_file
+from codezen.ignore_files import (
+    filter_files,
+    get_filepaths_not_gitignored,
+    load_ignore_file,
+)
 
 
 prompt = """You are an AI coder who is trying to help the user develop and debug an application based on their file system. The user has provided you with the following files and their contents, finally folllowed by the error message or issue they are facing.
@@ -31,15 +34,6 @@ If you are not sure what the answer is, say that explicitly.
 prompt_template = PromptTemplate(
     input_variables=["file_context", "issue_description"], template=prompt
 )
-
-
-def get_project_files_paths(root_dir: Path) -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files"], cwd=root_dir, capture_output=True, text=True
-    ).stdout
-    file_paths_strings = result.splitlines()
-    file_paths = [root_dir / Path(fp) for fp in file_paths_strings]
-    return file_paths
 
 
 def load_files_to_langchain_documents(root_dir: Path, project_files_paths: list[Path]):
@@ -76,7 +70,7 @@ def build_context_string(docs):
 
 
 def get_relevant_filepaths(root_dirpath: Path, czignore_filepath: Path):
-    project_files_paths = get_project_files_paths(root_dirpath)
+    project_files_paths = get_filepaths_not_gitignored(root_dirpath)
     czignore_patterns = load_ignore_file(czignore_filepath)
     project_files_paths = (
         filter_files(project_files_paths, czignore_patterns)

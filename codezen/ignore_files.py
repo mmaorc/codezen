@@ -1,7 +1,17 @@
 from pathlib import Path
 from typing import List, Optional
+import subprocess
 
 import pathspec
+
+
+def get_filepaths_not_gitignored(root_dirpath: Path):
+    result = subprocess.run(
+        ["git", "ls-files"], cwd=root_dirpath, capture_output=True, text=True
+    ).stdout
+    file_paths_strings = result.splitlines()
+    file_paths = [root_dirpath / Path(fp) for fp in file_paths_strings]
+    return file_paths
 
 
 def load_ignore_file(path: Path) -> Optional[pathspec.PathSpec]:
