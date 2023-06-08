@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, List
 
 import typer
 from binaryornot.check import is_binary
@@ -36,7 +36,9 @@ prompt_template = PromptTemplate(
 )
 
 
-def load_files_to_langchain_documents(root_dir: Path, project_files_paths: list[Path]):
+def load_files_to_langchain_documents(
+    root_dir: Path, project_files_paths: list[Path]
+) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter()
 
     docs = []
@@ -60,7 +62,7 @@ def load_files_to_langchain_documents(root_dir: Path, project_files_paths: list[
     return docs
 
 
-def build_context_string(docs):
+def build_context_string(docs: List[Document]) -> str:
     all_context = []
     for doc in docs:
         current_file = f"""Relative file path: {doc.metadata["source"]}\nFile content:\n{doc.page_content}\n---\n"""
@@ -69,7 +71,7 @@ def build_context_string(docs):
     return all_context_string
 
 
-def get_relevant_filepaths(root_dirpath: Path, czignore_filepath: Path):
+def get_relevant_filepaths(root_dirpath: Path, czignore_filepath: Path) -> List[Path]:
     project_files_paths = get_filepaths_not_gitignored(root_dirpath)
     czignore_patterns = load_ignore_file(czignore_filepath)
     project_files_paths = (

@@ -5,7 +5,7 @@ import subprocess
 import pathspec
 
 
-def get_filepaths_not_gitignored(root_dirpath: Path):
+def get_filepaths_not_gitignored(root_dirpath: Path) -> List[Path]:
     result = subprocess.run(
         ["git", "ls-files"], cwd=root_dirpath, capture_output=True, text=True
     ).stdout
