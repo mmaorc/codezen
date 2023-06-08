@@ -1,8 +1,9 @@
-import argparse
 import logging
 import subprocess
 from pathlib import Path
+from typing import Annotated
 
+import typer
 from binaryornot.check import is_binary
 from langchain import LLMChain, PromptTemplate
 from langchain.callbacks import get_openai_callback
@@ -74,59 +75,43 @@ def build_context_string(docs):
     return all_context_string
 
 
-def main():
-    parser = argparse.ArgumentParser(description="LLMChain CLI")
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        dest="verbose",
-        action="store_true",
-        help="Enable verbose logging",
-    )
-    parser.add_argument(
-        "-m",
-        "--model",
-        dest="model_name",
-        default="gpt-4",
-        help="The model name to use for the LLMChain",
-    )
-    parser.add_argument(
-        "-d",
-        "--root-dir",
-        dest="root_dir",
-        default=".//",
-        help="The root directory of the project",
-    )
-    parser.add_argument(
-        "-i",
-        "--ignore-file",
-        dest="ignore_file",
-        default="./.czignore",
-        help="The path to the .czignore file",
-    )
-    parser.add_argument(
-        "issue_description",
-        help="The issue description",
-    )
-    args = parser.parse_args()
+app = typer.Typer(add_completion=False)
 
+
+@app.command()
+def main(
+    issue_description: Annotated[str, typer.Argument(help="The issue description")],
+    verbose: Annotated[
+        bool, typer.Option("-v", "--verbose", help="Enable verbose logging")
+    ] = False,
+    model_name: Annotated[
+        str,
+        typer.Option("-m", "--model", help="The model name to use for the LLMChain"),
+    ] = "gpt-4",
+    root_dir: Annotated[
+        str, typer.Option("-d", "--root-dir", help="The root directory of the project")
+    ] = "./",
+    ignore_file: Annotated[
+        str, typer.Option("-i", "--ignore-file", help="The path to the .czignore file")
+    ] = "./.czignore",
+):
     # Set logging level
     logging.basicConfig(level=logging.WARNING)
-    if args.verbose:
+    if verbose:
         logging.basicConfig(level=logging.INFO)
 
-    model = ChatOpenAI(model_name=args.model_name)
+    model = ChatOpenAI(model_name=model_name)
     llm = LLMChain(llm=model, prompt=prompt_template)
 
-    project_files_paths = get_project_files_paths(args.root_dir)
-    czignore_patterns = load_ignore_file(args.ignore_file)
+    project_files_paths = get_project_files_paths(root_dir)
+    czignore_patterns = load_ignore_file(ignore_file)
     project_files_paths = (
         filter_files(project_files_paths, czignore_patterns)
         if czignore_patterns
         else project_files_paths
     )
 
-    docs = load_files_to_langchain_documents(args.root_dir, project_files_paths)
+    docs = load_files_to_langchain_documents(Path(root_dir), project_files_paths)
     context_string = build_context_string(docs)
 
     logging.info(
@@ -135,7 +120,7 @@ def main():
 
     with get_openai_callback() as cb:
         result = llm.run(
-            file_context=context_string, issue_description=args.issue_description
+            file_context=context_string, issue_description=issue_description
         )
 
     print()
