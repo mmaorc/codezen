@@ -78,8 +78,29 @@ def build_context_string(docs):
 app = typer.Typer(add_completion=False)
 
 
-@app.command()
-def main(
+@app.command(
+    name="list-files", help="Show the files that will be included in the prompt context"
+)
+def list_files(
+    root_dir: Annotated[
+        str, typer.Option("-d", "--root-dir", help="The root directory of the project")
+    ] = "./",
+    ignore_file: Annotated[
+        str, typer.Option("-i", "--ignore-file", help="The path to the .czignore file")
+    ] = "./.czignore",
+):
+    project_files_paths = get_project_files_paths(root_dir)
+    czignore_patterns = load_ignore_file(ignore_file)
+    project_files_paths = (
+        filter_files(project_files_paths, czignore_patterns)
+        if czignore_patterns
+        else project_files_paths
+    )
+    print("\n".join([str(p) for p in project_files_paths]))
+
+
+@app.command(help="Ask the LLM a question or make a request")
+def ask(
     issue_description: Annotated[str, typer.Argument(help="The issue description")],
     verbose: Annotated[
         bool, typer.Option("-v", "--verbose", help="Enable verbose logging")

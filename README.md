@@ -6,8 +6,8 @@ CodeZen is a CLI utility that uses LLMs to help you debug and evolve your codeba
 
 Usage examples:
 ```bash
-codezen "Why am I getting <some exception message>?"
-codezen "Write a README.md file for this project"
+codezen ask "Why am I getting <some exception message>?"
+codezen ask "Write a README.md file for this project"
 ```
 
 The differences from Github Copilot:
@@ -58,7 +58,7 @@ Before running the script, ensure that the `OPENAI_API_KEY` environment variable
 Run CodeZen with the following command:
 
 ```bash
-codezen <issue_description>
+codezen ask <issue_description>
 ```
 
 `<issue_description>`: Describe the issue you are facing with your code
