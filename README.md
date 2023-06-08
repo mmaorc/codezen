@@ -65,6 +65,12 @@ codezen <issue_description>
 
 If you want to ignore additional files without adding them to your `.gitignore`, You can create a `.czignore` file at the project's root and add them there.
 
+If you want to estimate the number of used tokens and show the files that are included in the prompt you can use:
+
+``` bash
+codezen <issue_description> --estimate
+```
+
 
 ## Contributing
 
