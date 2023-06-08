@@ -4,7 +4,7 @@ from typing import List, Optional
 import pathspec
 
 
-def load_ignore_file(path: str) -> Optional[pathspec.PathSpec]:
+def load_ignore_file(path: Path) -> Optional[pathspec.PathSpec]:
     try:
         with open(path, "r") as file:
             lines = file.read().splitlines()

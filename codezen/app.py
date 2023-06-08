@@ -33,12 +33,12 @@ prompt_template = PromptTemplate(
 )
 
 
-def get_project_files_paths(root_dir: str) -> list[Path]:
+def get_project_files_paths(root_dir: Path) -> list[Path]:
     result = subprocess.run(
         ["git", "ls-files"], cwd=root_dir, capture_output=True, text=True
     ).stdout
     file_paths_strings = result.splitlines()
-    file_paths = [Path(root_dir) / Path(fp) for fp in file_paths_strings]
+    file_paths = [root_dir / Path(fp) for fp in file_paths_strings]
     return file_paths
 
 
@@ -75,6 +75,17 @@ def build_context_string(docs):
     return all_context_string
 
 
+def get_relevant_filepaths(root_dirpath: Path, czignore_filepath: Path):
+    project_files_paths = get_project_files_paths(root_dirpath)
+    czignore_patterns = load_ignore_file(czignore_filepath)
+    project_files_paths = (
+        filter_files(project_files_paths, czignore_patterns)
+        if czignore_patterns
+        else project_files_paths
+    )
+    return project_files_paths
+
+
 app = typer.Typer(add_completion=False)
 
 
@@ -89,14 +100,10 @@ def list_files(
         str, typer.Option("-i", "--ignore-file", help="The path to the .czignore file")
     ] = "./.czignore",
 ):
-    project_files_paths = get_project_files_paths(root_dir)
-    czignore_patterns = load_ignore_file(ignore_file)
-    project_files_paths = (
-        filter_files(project_files_paths, czignore_patterns)
-        if czignore_patterns
-        else project_files_paths
+    relevant_filepaths = get_relevant_filepaths(
+        root_dirpath=Path(root_dir), czignore_filepath=Path(ignore_file)
     )
-    print("\n".join([str(p) for p in project_files_paths]))
+    print("\n".join([str(p) for p in relevant_filepaths]))
 
 
 @app.command(help="Ask the LLM a question or make a request")
@@ -124,15 +131,11 @@ def ask(
     model = ChatOpenAI(model_name=model_name)
     llm = LLMChain(llm=model, prompt=prompt_template)
 
-    project_files_paths = get_project_files_paths(root_dir)
-    czignore_patterns = load_ignore_file(ignore_file)
-    project_files_paths = (
-        filter_files(project_files_paths, czignore_patterns)
-        if czignore_patterns
-        else project_files_paths
+    relevant_filepaths = get_relevant_filepaths(
+        root_dirpath=Path(root_dir), czignore_filepath=Path(ignore_file)
     )
 
-    docs = load_files_to_langchain_documents(Path(root_dir), project_files_paths)
+    docs = load_files_to_langchain_documents(Path(root_dir), relevant_filepaths)
     context_string = build_context_string(docs)
 
     logging.info(
