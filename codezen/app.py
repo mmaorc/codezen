@@ -62,7 +62,7 @@ def load_files_to_langchain_documents(
     return docs
 
 
-def build_context_string(docs: List[Document]) -> str:
+def build_context_string_from_docs(docs: List[Document]) -> str:
     all_context = []
     for doc in docs:
         current_file = f"""Relative file path: {doc.metadata["source"]}\nFile content:\n{doc.page_content}\n---\n"""
@@ -82,6 +82,19 @@ def get_relevant_filepaths(root_dirpath: Path, czignore_filepath: Path) -> List[
     return project_files_paths
 
 
+def create_model(model_name: str) -> ChatOpenAI:
+    return ChatOpenAI(model_name=model_name)
+
+
+def build_context_string(root_dirpath: Path, relevant_filepaths: List[Path]) -> str:
+    docs = load_files_to_langchain_documents(root_dirpath, relevant_filepaths)
+    logging.info(
+        f"Loaded {len(docs)} documents, total of {sum([len(doc.page_content) for doc in docs])} characters"
+    )
+    context_string = build_context_string_from_docs(docs)
+    return context_string
+
+
 app = typer.Typer(add_completion=False)
 
 
@@ -89,6 +102,10 @@ app = typer.Typer(add_completion=False)
     name="list-files", help="Show the files that will be included in the prompt context"
 )
 def list_files(
+    model_name: Annotated[
+        str,
+        typer.Option("-m", "--model", help="The model name to use for the LLMChain"),
+    ] = "gpt-4",
     root_dir: Annotated[
         str, typer.Option("-d", "--root-dir", help="The root directory of the project")
     ] = "./",
@@ -99,6 +116,17 @@ def list_files(
     relevant_filepaths = get_relevant_filepaths(
         root_dirpath=Path(root_dir), czignore_filepath=Path(czignore_file)
     )
+
+    # Calculate total number of tokens
+    model = create_model(model_name=model_name)
+    context_string = build_context_string(Path(root_dir), relevant_filepaths)
+    token_count = model.get_num_tokens(context_string)
+
+    print("Total number of request tokens:")
+    print(token_count)
+    print()
+
+    print("Included files:")
     print("\n".join([str(p) for p in relevant_filepaths]))
 
 
@@ -124,19 +152,14 @@ def ask(
     if verbose:
         logging.basicConfig(level=logging.INFO)
 
-    model = ChatOpenAI(model_name=model_name)
+    model = create_model(model_name=model_name)
     llm = LLMChain(llm=model, prompt=prompt_template)
 
     relevant_filepaths = get_relevant_filepaths(
         root_dirpath=Path(root_dir), czignore_filepath=Path(czignore_file)
     )
 
-    docs = load_files_to_langchain_documents(Path(root_dir), relevant_filepaths)
-    context_string = build_context_string(docs)
-
-    logging.info(
-        f"Loaded {len(docs)} documents, total of {sum([len(doc.page_content) for doc in docs])} characters"
-    )
+    context_string = build_context_string(Path(root_dir), relevant_filepaths)
 
     with get_openai_callback() as cb:
         result = llm.run(

@@ -13,6 +13,7 @@ openai = "^0.27.7"
 binaryornot = "^0.4.4"
 pathspec = "^0.11.1"
 typer = "^0.9.0"
+tiktoken = "^0.4.0"
 
 
 [tool.poetry.group.dev.dependencies]
