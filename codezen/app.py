@@ -96,12 +96,12 @@ def list_files(
     root_dir: Annotated[
         str, typer.Option("-d", "--root-dir", help="The root directory of the project")
     ] = "./",
-    ignore_file: Annotated[
-        str, typer.Option("-i", "--ignore-file", help="The path to the .czignore file")
+    czignore_file: Annotated[
+        str, typer.Option("--czignore-file", help="The path to the .czignore file")
     ] = "./.czignore",
 ):
     relevant_filepaths = get_relevant_filepaths(
-        root_dirpath=Path(root_dir), czignore_filepath=Path(ignore_file)
+        root_dirpath=Path(root_dir), czignore_filepath=Path(czignore_file)
     )
     print("\n".join([str(p) for p in relevant_filepaths]))
 
@@ -119,8 +119,8 @@ def ask(
     root_dir: Annotated[
         str, typer.Option("-d", "--root-dir", help="The root directory of the project")
     ] = "./",
-    ignore_file: Annotated[
-        str, typer.Option("-i", "--ignore-file", help="The path to the .czignore file")
+    czignore_file: Annotated[
+        str, typer.Option("--czignore-file", help="The path to the .czignore file")
     ] = "./.czignore",
 ):
     # Set logging level
@@ -132,7 +132,7 @@ def ask(
     llm = LLMChain(llm=model, prompt=prompt_template)
 
     relevant_filepaths = get_relevant_filepaths(
-        root_dirpath=Path(root_dir), czignore_filepath=Path(ignore_file)
+        root_dirpath=Path(root_dir), czignore_filepath=Path(czignore_file)
     )
 
     docs = load_files_to_langchain_documents(Path(root_dir), relevant_filepaths)
